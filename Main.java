@@ -289,298 +289,22 @@ public class Main extends Application {
 					final double moldX = mboxMain.getTranslateX();
 					final double moldY = mboxMain.getTranslateY();
 					
-					// detects body collision
-					if(testIntersection(body,mbody)) {
-						double tempYfix = elapsedSeconds * boxSpeedX;
-						//boxMain.setTranslateY(-tempYfix);
-						//boxVelocityY.set(- boxSpeedY);
-						int direction = intersectionDirection(mbody,body);
-						moveDirection(boxMain,direction);
+					mainCharacterBodyCollision();
+					enemyBodyCollision();
+					
+					if(enemyAI && testIntersection(body, mbody))
+						enemyAIAttackLogic();
+					
+					if(gameplay) 
+						pistonCollision();
+				
+					pistonTimerUpdater(elapsedSeconds);
+					pistonResetter();
 						
-						if(enemyAI) {
-						
-							if(!RIGHTpressed) {
-								debugString = new String(debugString + "rightAI");
-								mpistonRight.getTransforms().addAll(mpistonHoriRight);
-								//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
-								RIGHTpressed = true;
-								mrightPistonTimer = coolDownTime;
-							}
-							if(enemyAI && !LEFTpressed) {
-								mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
-								LEFTpressed = true;
-								mleftPistonTimer = coolDownTime;
-							}
-							if(enemyAI && !UPpressed) {
-								mpistonTop.getTransforms().addAll(mpistonVertiUp);
-								UPpressed = true;
-								mtopPistonTimer = coolDownTime;
-							}
-							if(enemyAI && !DOWNpressed) {
-								mpistonBottom.getTransforms().addAll(mpistonVertiDown);
-								DOWNpressed = true;
-								mbotPistonTimer = coolDownTime;
-							}
-						}
-					}
+					stuffMovement(elapsedSeconds, oldX, oldY, moldX, moldY);
 					
-					
-					// detecting body collision
-					if(testIntersection(body,arenaRight)) {
-						boxVelocityX.set(0);
-						//double Xchange = putOutside(body,arenaRight,"left","return");
-					}
-					if (testIntersection(body,arenaLeft)) {
-						boxVelocityX.set(0);
-					}
-					if (testIntersection(body,arenaTop)) {
-						boxVelocityY.set(0);
-					}
-					if (testIntersection(body,arenaBot)) {
-						boxVelocityY.set(0);
-					}
-					
-					
-					
-					
-					// detecting enemy body collision
-					if(testIntersection(mbody,arenaRight)) {
-						mboxVelocityX.set(0);
-						//double Xchange = putOutside(mbody,arenaRight,"left","return");
-						if(enemyAI && !RIGHTpressed) {
-							debugString = new String(debugString + "rightAI");
-							mpistonRight.getTransforms().addAll(mpistonHoriRight);
-							//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
-							RIGHTpressed = true;
-							mrightPistonTimer = coolDownTime;
-						}
-					}
-					if (testIntersection(mbody,arenaLeft)) {
-						mboxVelocityX.set(0);
-						if(enemyAI && !LEFTpressed) {
-							mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
-							LEFTpressed = true;
-							mleftPistonTimer = coolDownTime;
-						}
-					}
-					if (testIntersection(mbody,arenaTop)) {
-						mboxVelocityY.set(0);
-						if(enemyAI && !UPpressed) {
-							mpistonTop.getTransforms().addAll(mpistonVertiUp);
-							UPpressed = true;
-							mtopPistonTimer = coolDownTime;
-						}
-					}
-					if (testIntersection(mbody,arenaBot)) {
-						mboxVelocityY.set(0);
-						if(enemyAI && !DOWNpressed) {
-							mpistonBottom.getTransforms().addAll(mpistonVertiDown);
-							DOWNpressed = true;
-							mbotPistonTimer = coolDownTime;
-						}
-					}
-			if(gameplay) {
-					// detecting piston collision
-				if(Dpressed || Apressed || Wpressed || Spressed) {
-					if(
-							testIntersection(pistonRight,mbody) ||
-							testIntersection(pistonLeft,mbody) ||
-							testIntersection(pistonTop,mbody) ||
-							testIntersection(pistonBottom,mbody)
-							) {
-						// kill enemy
-						
-						roundWin(1);
-					} else {
-						if(Dpressed && testIntersection(pistonRight,arenaRight)) {
-							boxVelocityX.set( - boxSpeedX);
-						}
-						if (Apressed && testIntersection(pistonLeft,arenaLeft)) {
-							boxVelocityX.set(+ boxSpeedX);
-						}
-						if (Wpressed && testIntersection(pistonTop,arenaTop)) {
-							boxVelocityY.set(+ boxSpeedY);
-						}
-						if (Spressed && testIntersection(pistonBottom,arenaBot)) {
-							boxVelocityY.set(- boxSpeedY);
-						}
-					}
-				}
-					//detecting piston collision for mirror match
-				if(RIGHTpressed || LEFTpressed || UPpressed || DOWNpressed) {
-					if(
-							testIntersection(mpistonRight,body) ||
-							testIntersection(mpistonLeft,body) ||
-							testIntersection(mpistonTop,body) ||
-							testIntersection(mpistonBottom,body)
-							) {
-						// kill enemy
-						
-						roundWin(2);
-					} else {
-						if(RIGHTpressed && testIntersection(mpistonRight,arenaRight)) {
-							mboxVelocityX.set( - boxSpeedX);
-						}
-						if (LEFTpressed && testIntersection(mpistonLeft,arenaLeft)) {
-							mboxVelocityX.set(+ boxSpeedX);
-						}
-						if (UPpressed && testIntersection(mpistonTop,arenaTop)) {
-							mboxVelocityY.set(+ boxSpeedY);
-						}
-						if (DOWNpressed && testIntersection(mpistonBottom,arenaBot)) {
-							mboxVelocityY.set(- boxSpeedY);
-						}
-					}
-				}
-					
-			}
-				// KILLING SYSTEM - I want to move this, it remains commented for now
-				/*	
-					// detects if mchar active piston has hit mirror match
-					if(testIntersection(pistonRight,mbody) && Dpressed == true) {
-						boxVelocityX.set( - boxSpeedX);
-						mboxVelocityX.set(0.0);
-						mboxVelocityY.set(0.0);
-					} else if (testIntersection(pistonLeft,mbody) && Dpressed == true) {
-						boxVelocityX.set(+ boxSpeedX);
-						mboxVelocityX.set(0.0);
-						mboxVelocityY.set(0.0);
-					} else if (testIntersection(pistonTop,mbody) && Dpressed == true) {
-						boxVelocityY.set(+ boxSpeedY);
-						mboxVelocityX.set(0.0);
-						mboxVelocityY.set(0.0);
-					} else if (testIntersection(pistonBottom,mbody) && Dpressed == true) {
-						boxVelocityY.set(- boxSpeedY);
-						mboxVelocityX.set(0.0);
-						mboxVelocityY.set(0.0);
-					}
-					*/
-					
-					
-					// keeps track on how long since last time piston was activated
-					if(rightPistonTimer - elapsedSeconds >= 0) {
-						rightPistonTimer = rightPistonTimer - elapsedSeconds;	
-					} else {
-						rightPistonTimer = 0;
-					}
-					if(leftPistonTimer - elapsedSeconds >= 0) {
-						leftPistonTimer = leftPistonTimer - elapsedSeconds;
-					} else {
-						leftPistonTimer = 0;
-					}
-					if(topPistonTimer - elapsedSeconds >= 0) {
-						topPistonTimer = topPistonTimer - elapsedSeconds;
-					} else {
-						topPistonTimer = 0;
-					}
-					if(botPistonTimer - elapsedSeconds >= 0) {
-						botPistonTimer = botPistonTimer - elapsedSeconds;
-					} else {
-						botPistonTimer = 0;
-					}
-					/* mirror match key starts here*/
-					if(mrightPistonTimer - elapsedSeconds >= 0) {
-						mrightPistonTimer = mrightPistonTimer - elapsedSeconds;	
-					} else {
-						mrightPistonTimer = 0;
-					}
-					if(mleftPistonTimer - elapsedSeconds >= 0) {
-						mleftPistonTimer = mleftPistonTimer - elapsedSeconds;
-					} else {
-						mleftPistonTimer = 0;
-					}
-					if(mtopPistonTimer - elapsedSeconds >= 0) {
-						mtopPistonTimer = mtopPistonTimer - elapsedSeconds;
-					} else {
-						mtopPistonTimer = 0;
-					}
-					if(mbotPistonTimer - elapsedSeconds >= 0) {
-						mbotPistonTimer = mbotPistonTimer - elapsedSeconds;
-					} else {
-						mbotPistonTimer = 0;
-					} /**/
-					
-					
-					// retracts piston after coolDownTime passes
-					if( coolDownTime - rightPistonTimer > timeCanBeOut && Dpressed) {
-						pistonRight.getTransforms().addAll(pistonHoriLeft);
-						Dpressed = false;
-					} else if( coolDownTime - leftPistonTimer > timeCanBeOut && Apressed) {
-						pistonLeft.getTransforms().addAll(pistonHoriRight);
-						Apressed = false;
-					} else if( coolDownTime - topPistonTimer > timeCanBeOut && Wpressed) {
-						pistonTop.getTransforms().addAll(pistonVertiDown);
-						Wpressed = false;
-					} else if( coolDownTime - botPistonTimer > timeCanBeOut && Spressed) {
-						pistonBottom.getTransforms().addAll(pistonVertiUp);
-						Spressed = false;
-					}
-					
-					/* mirror match starts here*/
-					if( coolDownTime - mrightPistonTimer > timeCanBeOut && RIGHTpressed) {
-						mpistonRight.getTransforms().addAll(mpistonHoriLeft);
-						RIGHTpressed = false;
-					}
-					if( coolDownTime - mleftPistonTimer > timeCanBeOut && LEFTpressed) {
-						mpistonLeft.getTransforms().addAll(mpistonHoriRight);
-						LEFTpressed = false;
-					}
-					if( coolDownTime - mtopPistonTimer > timeCanBeOut && UPpressed) {
-						mpistonTop.getTransforms().addAll(mpistonVertiDown);
-						UPpressed = false;
-					}
-					if( coolDownTime - mbotPistonTimer > timeCanBeOut && DOWNpressed) {
-						mpistonBottom.getTransforms().addAll(mpistonVertiUp);
-						DOWNpressed = false;
-					} /**/
-					
-					
-					// x movement
-					final double deltaX = elapsedSeconds * boxVelocityX.get() * isReset;
-					final double newX = (oldX + deltaX) * isReset;//Math.max(minX,  Math.min(maxX, oldX + deltaX));
-					// y movement
-					final double deltaY = elapsedSeconds * boxVelocityY.get() * isReset;
-					final double newY = (oldY + deltaY) * isReset;//Math.max(minY,  Math.min(maxY, oldY + deltaY));
-					
-					// mm x movement
-					final double mdeltaX = elapsedSeconds * mboxVelocityX.get() * isReset;
-					final double mnewX = (moldX + mdeltaX) * isReset;//Math.max(minX,  Math.min(maxX, moldX + mdeltaX));
-					
-					// mm y movement
-					final double mdeltaY = elapsedSeconds * mboxVelocityY.get() * isReset;
-					final double mnewY = (moldY + mdeltaY) * isReset;//Math.max(minY,  Math.min(maxY, moldY + mdeltaY));
-					
-					
-					// setting movement
-					boxMain.setTranslateX(newX);
-					boxMain.setTranslateY(newY);
-					
-					// mm movement
-					mboxMain.setTranslateX(mnewX);
-					mboxMain.setTranslateY(mnewY);
-					
-
-					
-					// takes away from cooldowntimer
-					if(startCountDown > -1.1) {
-						
-						if(startCountDown < 0.0 && startCountDown > -1.0) {
-							startCountDown = startCountDown - elapsedSeconds;
-							countDown.setText("GO!");
-						} else if(startCountDown < -1.01){
-							 countDown.setVisible(false);
-							 gameplay = true;
-						} else if(startCountDown - elapsedSeconds < 0) {
-							startCountDown = startCountDown - elapsedSeconds;
-							countDown.setText("READY: 0.0");
-						}   else {
-						
-							startCountDown = startCountDown - elapsedSeconds;
-							countDown.setText("READY: " + Double.parseDouble(Double.toString(startCountDown).substring(0, 2)));
-						}
-						
-						
-					}
+					if(startCountDown > -1.1) 
+						startCountDown = countDownDisplay(startCountDown, elapsedSeconds);
 					
 					// resets isReset tag
 					isReset = 1;
@@ -592,7 +316,233 @@ public class Main extends Application {
 		};
 	}
 	
-	public void enemyBodyCollision(Rectangle body, Rectangle Object) {
+	public void stuffMovement(double elapsedSeconds, double oldX, double oldY, double moldX, double moldY) {
+		// x movement
+		final double deltaX = elapsedSeconds * boxVelocityX.get() * isReset;
+		final double newX = (oldX + deltaX) * isReset;//Math.max(minX,  Math.min(maxX, oldX + deltaX));
+		// y movement
+		final double deltaY = elapsedSeconds * boxVelocityY.get() * isReset;
+		final double newY = (oldY + deltaY) * isReset;//Math.max(minY,  Math.min(maxY, oldY + deltaY));
+		
+		// mm x movement
+		final double mdeltaX = elapsedSeconds * mboxVelocityX.get() * isReset;
+		final double mnewX = (moldX + mdeltaX) * isReset;//Math.max(minX,  Math.min(maxX, moldX + mdeltaX));
+		
+		// mm y movement
+		final double mdeltaY = elapsedSeconds * mboxVelocityY.get() * isReset;
+		final double mnewY = (moldY + mdeltaY) * isReset;//Math.max(minY,  Math.min(maxY, moldY + mdeltaY));
+		
+		// setting movement
+		boxMain.setTranslateX(newX);
+		boxMain.setTranslateY(newY);
+		
+		// mm movement
+		mboxMain.setTranslateX(mnewX);
+		mboxMain.setTranslateY(mnewY);
+	}
+	
+	public void pistonResetter() {
+		// retracts pistons after coolDownTime passes
+		if( coolDownTime - rightPistonTimer > timeCanBeOut && Dpressed) {
+			pistonRight.getTransforms().addAll(pistonHoriLeft);
+			Dpressed = false;
+		} else if( coolDownTime - leftPistonTimer > timeCanBeOut && Apressed) {
+			pistonLeft.getTransforms().addAll(pistonHoriRight);
+			Apressed = false;
+		} else if( coolDownTime - topPistonTimer > timeCanBeOut && Wpressed) {
+			pistonTop.getTransforms().addAll(pistonVertiDown);
+			Wpressed = false;
+		} else if( coolDownTime - botPistonTimer > timeCanBeOut && Spressed) {
+			pistonBottom.getTransforms().addAll(pistonVertiUp);
+			Spressed = false;
+		}
+		
+		/* mirror match starts here*/
+		if( coolDownTime - mrightPistonTimer > timeCanBeOut && RIGHTpressed) {
+			mpistonRight.getTransforms().addAll(mpistonHoriLeft);
+			RIGHTpressed = false;
+		}
+		if( coolDownTime - mleftPistonTimer > timeCanBeOut && LEFTpressed) {
+			mpistonLeft.getTransforms().addAll(mpistonHoriRight);
+			LEFTpressed = false;
+		}
+		if( coolDownTime - mtopPistonTimer > timeCanBeOut && UPpressed) {
+			mpistonTop.getTransforms().addAll(mpistonVertiDown);
+			UPpressed = false;
+		}
+		if( coolDownTime - mbotPistonTimer > timeCanBeOut && DOWNpressed) {
+			mpistonBottom.getTransforms().addAll(mpistonVertiUp);
+			DOWNpressed = false;
+		}
+	}
+	
+	public void pistonTimerUpdater(double elapsedSeconds) {
+		// keeps track on how long since last time piston was activated
+		if(rightPistonTimer - elapsedSeconds >= 0) {
+			rightPistonTimer = rightPistonTimer - elapsedSeconds;	
+		} else {
+			rightPistonTimer = 0;
+		}
+		if(leftPistonTimer - elapsedSeconds >= 0) {
+			leftPistonTimer = leftPistonTimer - elapsedSeconds;
+		} else {
+			leftPistonTimer = 0;
+		}
+		if(topPistonTimer - elapsedSeconds >= 0) {
+			topPistonTimer = topPistonTimer - elapsedSeconds;
+		} else {
+			topPistonTimer = 0;
+		}
+		if(botPistonTimer - elapsedSeconds >= 0) {
+			botPistonTimer = botPistonTimer - elapsedSeconds;
+		} else {
+			botPistonTimer = 0;
+		}
+		/* mirror match key starts here*/
+		if(mrightPistonTimer - elapsedSeconds >= 0) {
+			mrightPistonTimer = mrightPistonTimer - elapsedSeconds;	
+		} else {
+			mrightPistonTimer = 0;
+		}
+		if(mleftPistonTimer - elapsedSeconds >= 0) {
+			mleftPistonTimer = mleftPistonTimer - elapsedSeconds;
+		} else {
+			mleftPistonTimer = 0;
+		}
+		if(mtopPistonTimer - elapsedSeconds >= 0) {
+			mtopPistonTimer = mtopPistonTimer - elapsedSeconds;
+		} else {
+			mtopPistonTimer = 0;
+		}
+		if(mbotPistonTimer - elapsedSeconds >= 0) {
+			mbotPistonTimer = mbotPistonTimer - elapsedSeconds;
+		} else {
+			mbotPistonTimer = 0;
+		}
+	}
+	
+	public void enemyAIAttackLogic() {
+		if(!RIGHTpressed) {
+			debugString = new String(debugString + "rightAI");
+			mpistonRight.getTransforms().addAll(mpistonHoriRight);
+			//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+			RIGHTpressed = true;
+			mrightPistonTimer = coolDownTime;
+		}
+		if(enemyAI && !LEFTpressed) {
+			mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
+			LEFTpressed = true;
+			mleftPistonTimer = coolDownTime;
+		}
+		if(enemyAI && !UPpressed) {
+			mpistonTop.getTransforms().addAll(mpistonVertiUp);
+			UPpressed = true;
+			mtopPistonTimer = coolDownTime;
+		}
+		if(enemyAI && !DOWNpressed) {
+			mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+			DOWNpressed = true;
+			mbotPistonTimer = coolDownTime;
+		}
+	}
+	
+	public double countDownDisplay(double startCountDown, double elapsedSeconds) {
+		if(startCountDown < 0.0 && startCountDown > -1.0) {
+			countDown.setText("GO!");
+		} else if(startCountDown < -1.01){
+			 countDown.setVisible(false);
+			 gameplay = true;
+		} else if(startCountDown - elapsedSeconds < 0) {
+			countDown.setText("READY: 0.0");
+		}   else {
+			countDown.setText("READY: " + Double.parseDouble(Double.toString(startCountDown).substring(0, 3)));
+		}
+		return startCountDown - elapsedSeconds;
+	}
+	
+	public void pistonCollision() {
+		// detecting piston collision
+		if(Dpressed || Apressed || Wpressed || Spressed) {
+			if(
+					testIntersection(pistonRight,mbody) ||
+					testIntersection(pistonLeft,mbody) ||
+					testIntersection(pistonTop,mbody) ||
+					testIntersection(pistonBottom,mbody)
+					) {
+				// kill enemy
+				
+				roundWin(1);
+			} else {
+				if(Dpressed && testIntersection(pistonRight,arenaRight)) {
+					boxVelocityX.set( - boxSpeedX);
+				}
+				if (Apressed && testIntersection(pistonLeft,arenaLeft)) {
+					boxVelocityX.set(+ boxSpeedX);
+				}
+				if (Wpressed && testIntersection(pistonTop,arenaTop)) {
+					boxVelocityY.set(+ boxSpeedY);
+				}
+				if (Spressed && testIntersection(pistonBottom,arenaBot)) {
+					boxVelocityY.set(- boxSpeedY);
+				}
+			}
+		}
+			//detecting piston collision for mirror match
+		if(RIGHTpressed || LEFTpressed || UPpressed || DOWNpressed) {
+			if(
+					testIntersection(mpistonRight,body) ||
+					testIntersection(mpistonLeft,body) ||
+					testIntersection(mpistonTop,body) ||
+					testIntersection(mpistonBottom,body)
+					) {
+				// kill enemy
+				
+				roundWin(2);
+			} else {
+				if(RIGHTpressed && testIntersection(mpistonRight,arenaRight)) {
+					mboxVelocityX.set( - boxSpeedX);
+				}
+				if (LEFTpressed && testIntersection(mpistonLeft,arenaLeft)) {
+					mboxVelocityX.set(+ boxSpeedX);
+				}
+				if (UPpressed && testIntersection(mpistonTop,arenaTop)) {
+					mboxVelocityY.set(+ boxSpeedY);
+				}
+				if (DOWNpressed && testIntersection(mpistonBottom,arenaBot)) {
+					mboxVelocityY.set(- boxSpeedY);
+				}
+			}
+		}
+	}
+	
+	
+	
+	public void mainCharacterBodyCollision() {
+		// detecting body collision
+		if(testIntersection(body,arenaRight)) {
+			boxVelocityX.set(0);
+			//double Xchange = putOutside(body,arenaRight,"left","return");
+		}
+		if (testIntersection(body,arenaLeft)) {
+			boxVelocityX.set(0);
+		}
+		if (testIntersection(body,arenaTop)) {
+			boxVelocityY.set(0);
+		}
+		if (testIntersection(body,arenaBot)) {
+			boxVelocityY.set(0);
+		}
+		// detects body collision
+		if(testIntersection(body,mbody)) {
+			int direction = intersectionDirection(mbody,body);
+			moveDirection(boxMain,direction);
+			
+		}
+	}
+	
+	
+	public void enemyBodyCollision() {
+		/*
 			mboxVelocityX.set(0);
 			//double Xchange = putOutside(mbody,arenaRight,"left","return");
 			
@@ -605,9 +555,48 @@ public class Main extends Application {
 				//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
 				RIGHTpressed = true;
 				mrightPistonTimer = coolDownTime;
+			}*/
+			
+			// detecting enemy body collision
+			if(testIntersection(mbody,arenaRight)) {
+				mboxVelocityX.set(0);
+				//double Xchange = putOutside(mbody,arenaRight,"left","return");
+				if(enemyAI && !RIGHTpressed) {
+					debugString = new String(debugString + "rightAI");
+					mpistonRight.getTransforms().addAll(mpistonHoriRight);
+					//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+					RIGHTpressed = true;
+					mrightPistonTimer = coolDownTime;
+				}
+			}
+			if (testIntersection(mbody,arenaLeft)) {
+				mboxVelocityX.set(0);
+				if(enemyAI && !LEFTpressed) {
+					mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
+					LEFTpressed = true;
+					mleftPistonTimer = coolDownTime;
+				}
+			}
+			if (testIntersection(mbody,arenaTop)) {
+				mboxVelocityY.set(0);
+				if(enemyAI && !UPpressed) {
+					mpistonTop.getTransforms().addAll(mpistonVertiUp);
+					UPpressed = true;
+					mtopPistonTimer = coolDownTime;
+				}
+			}
+			if (testIntersection(mbody,arenaBot)) {
+				mboxVelocityY.set(0);
+				if(enemyAI && !DOWNpressed) {
+					mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+					DOWNpressed = true;
+					mbotPistonTimer = coolDownTime;
+				}
 			}
 		
 	}
+	
+	
 	
 	public void createMainMenu() {
 		menuTitle = new Text(20,50,"Box Game");
@@ -807,23 +796,18 @@ public class Main extends Application {
 	public void initializeMainCharacter() {
 		body = new Rectangle(100,100,blue);
 		body.relocate(120, 120);
-		//body.setMaterial(lightBlue);
 		
 		pistonBottom = new Rectangle (30,45,sRed);
 		pistonBottom.relocate(155, 175);
-		//pistonBottom.setMaterial(red);
 		
 		pistonTop = new Rectangle (30,45,sRed);
 		pistonTop.relocate(155, 120);
-		//pistonTop.setMaterial(red);
 		
 		pistonLeft = new Rectangle (45,30,sRed);
 		pistonLeft.relocate(120, 155);
-		//pistonLeft.setMaterial(red);
 		
 		pistonRight = new Rectangle (45,30,sRed);
 		pistonRight.relocate(175, 155);
-		//pistonRight.setMaterial(red);
 		
 		boxMain = new Group(pistonTop,pistonBottom,pistonLeft,pistonRight,body);
 		boxMain.relocate(arenaX, arenaY);
@@ -918,8 +902,7 @@ public class Main extends Application {
 	}
 
 	
-	public static Shape[] whatIntersects(Shape shape)
-	{
+	public static Shape[] whatIntersects(Shape shape) {
 		Shape[] shapeArray = {};
 		
 		return shapeArray;
@@ -964,6 +947,17 @@ public class Main extends Application {
 		
 	}
 
+	
+	public boolean rightCollision(Rectangle shapeA, Rectangle shapeB) {
+		
+		if(!testIntersection(shapeA,shapeB)) {
+			return false;
+		}
+		
+		Shape intersection = Shape.intersect(shapeA, shapeB);
+		
+		return false;
+	}
 	
 	// checks intersection of two shapes, and which direction shapeA is being intersected by shapeB
 	public static int intersectionDirection(Shape shapeA, Shape shapeB) {
@@ -1121,26 +1115,6 @@ public class Main extends Application {
 			}
 		}
 		
-		
-		/*
-		if() {
-			if() {//intersecting from top
-				return 1; // intersecting from top 
-			}
-			if() {//intersecting from bot
-				return 2; // intersecting from bot
-			}
-		} else if () {
-			if() {//intersecting from top
-				return 3; // intersecting from right
-			}
-			if() {//intersecting from top
-				return 4; // intersecting from left
-			}
-		}	
-		if() { //intersecting from a corner (pixel intersection is exactly the same)
-			return 5; // corner, tells them to reverse direction on both shapes
-		}*/
 		
 		return 0; // returns 0 if everything else fails / the shapes don't intersect
 	}
