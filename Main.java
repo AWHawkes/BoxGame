@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -47,6 +48,16 @@ public class Main extends Application {
 	// main menu
 	Text menuTitle;
 	Rectangle menuBackground;
+	
+	Text localSingleplayerText;
+	Rectangle localSingleplayerRectangle;
+	
+	Text localMultiplayerText;
+	Rectangle localMultiplayerRectangle;
+	
+	Text quitText;
+	Rectangle quitRectangle;
+	
 	Group menuGroup;
 	// menu
 	VBox startMenu;
@@ -73,6 +84,7 @@ public class Main extends Application {
 	
 	
 	boolean menu = true;
+	boolean gameSetup = false;
 	boolean gameplay = false;
 	
 	// debug
@@ -277,6 +289,40 @@ public class Main extends Application {
 		}
 	}
 	
+	public void createMainMenu() {
+		int menuX = 200;
+		menuTitle = new Text(200,400,"Box Game");
+		menuTitle.setFont(new Font(80));
+		menuTitle.relocate(50, 50);
+		menuBackground = new Rectangle(1500,1500, gray);
+		menuBackground.relocate(0, 0);
+		
+		localSingleplayerText = new Text(50, 250, "Local Singleplayer");
+		localSingleplayerText.setFont(new Font(38));
+		localSingleplayerText.relocate(menuX, 398);
+		localSingleplayerRectangle = new Rectangle(320,50,blue);
+		localSingleplayerRectangle.relocate(menuX, 400);
+		
+		localMultiplayerText = new Text(50, 150, "Local Multiplayer");
+		localMultiplayerText.relocate(menuX, 525);
+		localMultiplayerText.setFont(new Font(38));
+		localMultiplayerRectangle = new Rectangle(320,50,blue);
+		localMultiplayerRectangle.relocate(menuX, 500);
+		
+		quitText = new Text(20, 50, "Quit");
+		quitText.relocate(menuX, 675);
+		quitText.setFont(new Font(38));
+		quitRectangle = new Rectangle(80,50,sRed);
+		quitRectangle.relocate(menuX, 650);
+		 
+		menuGroup = new Group(
+				menuBackground, menuTitle,
+				localSingleplayerRectangle, localSingleplayerText,
+				localMultiplayerRectangle, localMultiplayerText,
+				quitRectangle, quitText
+				);
+	}
+	
 	public void startAnimationTimer() {
 		gameAnimation = new AnimationTimer() {
 			@Override
@@ -292,19 +338,30 @@ public class Main extends Application {
 					mainCharacterBodyCollision();
 					enemyBodyCollision();
 					
-					if(enemyAI && testIntersection(body, mbody))
-						enemyAIAttackLogic();
 					
-					if(gameplay) 
-						pistonCollision();
-				
-					pistonTimerUpdater(elapsedSeconds);
-					pistonResetter();
+					if(enemyAI) {
 						
+						if(testIntersection(body, mbody))
+							enemyAIAttackLogic();
+					}
+					
+					if(gameplay) {
+						pistonCollision();
+						pistonTimerUpdater(elapsedSeconds);
+						pistonResetter();
+					}
+					
 					stuffMovement(elapsedSeconds, oldX, oldY, moldX, moldY);
 					
-					if(startCountDown > -1.1) 
-						startCountDown = countDownDisplay(startCountDown, elapsedSeconds);
+					if(gameSetup)
+						if(startCountDown > -1.1) {
+							startCountDown = countDownDisplay(startCountDown, elapsedSeconds);
+							if(startCountDown < 0.0)
+								gameplay = true;
+						} else {
+							gameSetup = false;
+						}
+					
 					
 					// resets isReset tag
 					isReset = 1;
@@ -422,7 +479,7 @@ public class Main extends Application {
 	}
 	
 	public void enemyAIAttackLogic() {
-		if(!RIGHTpressed) {
+		if(enemyAI && !RIGHTpressed) {
 			debugString = new String(debugString + "rightAI");
 			mpistonRight.getTransforms().addAll(mpistonHoriRight);
 			//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
@@ -451,7 +508,6 @@ public class Main extends Application {
 			countDown.setText("GO!");
 		} else if(startCountDown < -1.01){
 			 countDown.setVisible(false);
-			 gameplay = true;
 		} else if(startCountDown - elapsedSeconds < 0) {
 			countDown.setText("READY: 0.0");
 		}   else {
@@ -598,11 +654,7 @@ public class Main extends Application {
 	
 	
 	
-	public void createMainMenu() {
-		menuTitle = new Text(20,50,"Box Game");
-		menuBackground = new Rectangle(1100,800, white);
-		menuGroup = new Group(menuTitle);
-	}
+
 	
 	public void initializeTransformations() {
 		/*************Transformations**********************/
@@ -762,6 +814,31 @@ public class Main extends Application {
 					DOWNpressed = false;
 				}
 		});
+		
+		
+		
+		localSingleplayerText.setOnMouseReleased(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				menuGroup.setVisible(false);
+				menu = !menu;
+				gameSetup = true;
+				gameplay = false;
+			}
+		});
+		
+		localMultiplayerText.setOnMouseReleased(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				menuGroup.setVisible(false);
+				menu = !menu;
+				gameSetup = true;
+				enemyAI = false;	
+				gameplay = false;
+			}		
+		});
 	}
 	
 	public void initializeUI() {
@@ -900,6 +977,7 @@ public class Main extends Application {
 		return false;
 
 	}
+	
 
 	
 	public static Shape[] whatIntersects(Shape shape) {
@@ -1132,6 +1210,7 @@ public class Main extends Application {
 	
 	public void roundWin(int player) {
 		
+		
 		if(player == 1) {
 			// increments player 1 score by 1
 			++mainBox;
@@ -1169,7 +1248,7 @@ public class Main extends Application {
 		} else {
 			resetBoxes();
 		}
-		
+		countDown.setVisible(false);
 		startCountDown = countDownTime;
 		resetUI();
 		
@@ -1201,6 +1280,7 @@ public class Main extends Application {
 		startCountDown = countDownTime;
 		countDown.setVisible(true);
 		gameplay = false;
+		gameSetup = true;
 		return;
 	}
 	
@@ -1289,7 +1369,7 @@ public class Main extends Application {
 		root.setTop(startMenu);
 		root.setCenter(game);
 		root.setStyle("-fx-background-color: tan;");
-		root.getChildren().addAll(background,enemies,boxMain,midground,UI);
+		root.getChildren().addAll(background,enemies,boxMain,midground,UI,menuGroup);
 	}
 
 	
