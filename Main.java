@@ -236,6 +236,8 @@ public class Main extends Application {
 			initializeArena();
 			
 			
+			
+			
 			background = new Group();
 			midground = new Group(arenaTop,arenaBot,arenaLeft, arenaRight);
 			enemies = new Group(mboxMain);
@@ -251,6 +253,8 @@ public class Main extends Application {
 			
 			startMenu.getChildren().addAll(make_box);
 			startMenu.setId("start menu");
+			
+			
 			
 			/*************Animation Timer*******************************/
 			startAnimationTimer();
@@ -283,6 +287,8 @@ public class Main extends Application {
 			/************Key Press Event Handlers******************/
 			keyPressHandler();
 			// main character key presses
+			
+			
 			
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -327,6 +333,11 @@ public class Main extends Application {
 		gameAnimation = new AnimationTimer() {
 			@Override
 			public void handle(long timestamp) {
+				if(DOWNpressed) {
+					//System.out.println("DOWNpressed equals true");
+				} else if (!DOWNpressed) {
+					//System.out.println("DOWNpressed equals false");
+				}
 				if(lastUpdateTime.get() > 0) {
 					final double elapsedSeconds = (timestamp - lastUpdateTime.get()) / 1_000_000_000.0;
 					// current movement
@@ -403,33 +414,45 @@ public class Main extends Application {
 		if( coolDownTime - rightPistonTimer > timeCanBeOut && Dpressed) {
 			pistonRight.getTransforms().addAll(pistonHoriLeft);
 			Dpressed = false;
+			System.out.println("right piston retracted");
 		} else if( coolDownTime - leftPistonTimer > timeCanBeOut && Apressed) {
 			pistonLeft.getTransforms().addAll(pistonHoriRight);
 			Apressed = false;
+			System.out.println("left piston retracted");
 		} else if( coolDownTime - topPistonTimer > timeCanBeOut && Wpressed) {
 			pistonTop.getTransforms().addAll(pistonVertiDown);
 			Wpressed = false;
+			System.out.println("top piston retracted");
 		} else if( coolDownTime - botPistonTimer > timeCanBeOut && Spressed) {
 			pistonBottom.getTransforms().addAll(pistonVertiUp);
 			Spressed = false;
+			System.out.println("bottom piston retracted");
 		}
 		
 		/* mirror match starts here*/
 		if( coolDownTime - mrightPistonTimer > timeCanBeOut && RIGHTpressed) {
-			mpistonRight.getTransforms().addAll(mpistonHoriLeft);
+//			mpistonRight.getTransforms().addAll(mpistonHoriLeft);
+			transformPiston(mpistonRight,"Left");
 			RIGHTpressed = false;
+			System.out.println("mright piston retracted");
 		}
 		if( coolDownTime - mleftPistonTimer > timeCanBeOut && LEFTpressed) {
-			mpistonLeft.getTransforms().addAll(mpistonHoriRight);
+			//mpistonLeft.getTransforms().addAll(mpistonHoriRight);
+			transformPiston(mpistonLeft,"Right");
 			LEFTpressed = false;
+			System.out.println("mleft piston retracted");
 		}
 		if( coolDownTime - mtopPistonTimer > timeCanBeOut && UPpressed) {
-			mpistonTop.getTransforms().addAll(mpistonVertiDown);
+			//mpistonTop.getTransforms().addAll(mpistonVertiDown);
+			transformPiston(mpistonTop,"Down");
 			UPpressed = false;
+			System.out.println("mtop piston retracted");
 		}
 		if( coolDownTime - mbotPistonTimer > timeCanBeOut && DOWNpressed) {
-			mpistonBottom.getTransforms().addAll(mpistonVertiUp);
+			//mpistonBottom.getTransforms().addAll(mpistonVertiUp);
+			transformPiston(mpistonBottom,"Up");
 			DOWNpressed = false;
+			System.out.println("mbot piston retracted");
 		}
 	}
 	
@@ -460,21 +483,26 @@ public class Main extends Application {
 			mrightPistonTimer = mrightPistonTimer - elapsedSeconds;	
 		} else {
 			mrightPistonTimer = 0;
+			//System.out.println("mright piston timer reached 0");
 		}
 		if(mleftPistonTimer - elapsedSeconds >= 0) {
 			mleftPistonTimer = mleftPistonTimer - elapsedSeconds;
 		} else {
 			mleftPistonTimer = 0;
+			//System.out.println("mleft piston timer reached 0");
 		}
 		if(mtopPistonTimer - elapsedSeconds >= 0) {
 			mtopPistonTimer = mtopPistonTimer - elapsedSeconds;
 		} else {
 			mtopPistonTimer = 0;
+			//System.out.println("mtop piston timer reached 0");
 		}
 		if(mbotPistonTimer - elapsedSeconds >= 0) {
 			mbotPistonTimer = mbotPistonTimer - elapsedSeconds;
+			//System.out.println("mbot piston timer at: " + mbotPistonTimer);
 		} else {
 			mbotPistonTimer = 0;
+			//System.out.println("mbot piston timer reached 0");
 		}
 	}
 	
@@ -598,53 +626,40 @@ public class Main extends Application {
 	
 	
 	public void enemyBodyCollision() {
-		/*
-			mboxVelocityX.set(0);
-			//double Xchange = putOutside(mbody,arenaRight,"left","return");
-			
-			// figure out which direction the thing is
-			
-			
-			if(enemyAI && !RIGHTpressed) {
-				debugString = new String(debugString + "rightAI");
-				mpistonRight.getTransforms().addAll(mpistonHoriRight);
-				//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
-				RIGHTpressed = true;
-				mrightPistonTimer = coolDownTime;
-			}*/
-			
-			// detecting enemy body collision
+
 			if(testIntersection(mbody,arenaRight)) {
 				mboxVelocityX.set(0);
-				//double Xchange = putOutside(mbody,arenaRight,"left","return");
+				
 				if(enemyAI && !RIGHTpressed) {
 					debugString = new String(debugString + "rightAI");
-					mpistonRight.getTransforms().addAll(mpistonHoriRight);
-					//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+					transformPiston(mpistonRight,"Right");
 					RIGHTpressed = true;
 					mrightPistonTimer = coolDownTime;
 				}
 			}
 			if (testIntersection(mbody,arenaLeft)) {
 				mboxVelocityX.set(0);
+				
 				if(enemyAI && !LEFTpressed) {
-					mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
+					transformPiston(mpistonLeft,"Left");
 					LEFTpressed = true;
 					mleftPistonTimer = coolDownTime;
 				}
 			}
 			if (testIntersection(mbody,arenaTop)) {
 				mboxVelocityY.set(0);
+				
 				if(enemyAI && !UPpressed) {
-					mpistonTop.getTransforms().addAll(mpistonVertiUp);
+					transformPiston(mpistonTop,"Up");
 					UPpressed = true;
 					mtopPistonTimer = coolDownTime;
 				}
 			}
 			if (testIntersection(mbody,arenaBot)) {
 				mboxVelocityY.set(0);
+				
 				if(enemyAI && !DOWNpressed) {
-					mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+					transformPiston(mpistonBottom,"Down");
 					DOWNpressed = true;
 					mbotPistonTimer = coolDownTime;
 				}
@@ -658,32 +673,27 @@ public class Main extends Application {
 	
 	public void initializeTransformations() {
 		/*************Transformations**********************/
-		
-		// transforming right piston
+
 		pistonHoriRight = new Translate();
 		pistonHoriRight.setX(32);
 		pistonHoriRight.setY(0);
 		pistonHoriRight.setZ(0);
-		
-		// transforming left piston
+
 		pistonHoriLeft = new Translate();
 		pistonHoriLeft.setX(-32);
 		pistonHoriLeft.setY(0);
 		pistonHoriLeft.setZ(0);	
-		
-		// transforming verti piston upwards
+
 		pistonVertiUp = new Translate();
 		pistonVertiUp.setX(0);
 		pistonVertiUp.setY(-32);
 		pistonVertiUp.setZ(0);
-		
-		// transforming verti piston downwards
+
 		pistonVertiDown = new Translate();
 		pistonVertiDown.setX(0);
 		pistonVertiDown.setY(+32);
 		pistonVertiDown.setZ(0);
-		
-		// zero translate
+
 		zero = new Translate();
 		zero.setX(0);
 		zero.setY(0);
@@ -759,25 +769,29 @@ public class Main extends Application {
 					transformPiston(mpistonRight,"Right");
 					RIGHTpressed = true;
 					mrightPistonTimer = coolDownTime;
+					System.out.println("mright piston extended");
 				}
 				if(e.getCode() == KeyCode.LEFT && LEFTpressed == false && mleftPistonTimer == 0) {
 					transformPiston(mpistonLeft,"Left");
 					LEFTpressed = true;
 					mleftPistonTimer = coolDownTime;
+					System.out.println("mleft piston extended");
 				}
 				if(e.getCode() == KeyCode.UP && UPpressed == false && mtopPistonTimer == 0) {
 					transformPiston(mpistonTop,"Up");
 					UPpressed = true;
 					mtopPistonTimer = coolDownTime;
+					System.out.println("mUp piston extended");
 				}
 				if(e.getCode() == KeyCode.DOWN && DOWNpressed == false && mbotPistonTimer == 0) {
 					transformPiston(mpistonBottom,"Down");
 					DOWNpressed = true;
 					mbotPistonTimer = coolDownTime;
+					System.out.println("mDown piston extended");
 				}
 			}
 		});
-	
+		
 		scene.setOnKeyReleased(e -> {
 			if(e.getCode() == KeyCode.D && Dpressed == true) {
 				pistonRight.getTransforms().addAll(pistonHoriLeft);
@@ -798,20 +812,24 @@ public class Main extends Application {
 			// mirror match key releases
 			
 				if(e.getCode() == KeyCode.RIGHT && RIGHTpressed == true) {
-					mpistonRight.getTransforms().addAll(mpistonHoriLeft);
+					transformPiston(mpistonRight,"Left");
 					RIGHTpressed = false;
+					System.out.println("mright piston retracted key release");
 				}
 				if(e.getCode() == KeyCode.LEFT && LEFTpressed == true) {
-					mpistonLeft.getTransforms().addAll(mpistonHoriRight);
+					transformPiston(mpistonLeft,"Right");
 					LEFTpressed = false;
+					System.out.println("mleft piston retracted key release");
 				}
 				if(e.getCode() == KeyCode.UP && UPpressed == true ) {
-					mpistonTop.getTransforms().addAll(mpistonVertiDown);
+					transformPiston(mpistonTop,"Down");
 					UPpressed = false;
+					System.out.println("mUp piston retracted key release");
 				}
 				if(e.getCode() == KeyCode.DOWN && DOWNpressed == true ) {
-					mpistonBottom.getTransforms().addAll(mpistonVertiUp);
+					transformPiston(mpistonBottom,"Up");
 					DOWNpressed = false;
+					System.out.println("mDown piston retracted key release");
 				}
 		});
 		
@@ -839,6 +857,15 @@ public class Main extends Application {
 				gameplay = false;
 			}		
 		});
+		
+		quitText.setOnMouseReleased(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent arg0) {
+				System.exit(0);
+			}
+		});
+		
 	}
 	
 	public void initializeUI() {
