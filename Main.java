@@ -95,9 +95,10 @@ public class Main extends Application {
 	
 	// UI
 	
-	boolean enemyAI = true;
+	boolean enemyAI = false;
 	boolean countDownVisible = true;
 	Rectangle UIBackground;
+	Text mainMenuText;
 	Group UI;
 	
 	// box groups
@@ -412,44 +413,40 @@ public class Main extends Application {
 	public void pistonResetter() {
 		// retracts pistons after coolDownTime passes
 		if( coolDownTime - rightPistonTimer > timeCanBeOut && Dpressed) {
-			pistonRight.getTransforms().addAll(pistonHoriLeft);
+			transformPiston(pistonRight,"Left");
 			Dpressed = false;
 			System.out.println("right piston retracted");
 		} else if( coolDownTime - leftPistonTimer > timeCanBeOut && Apressed) {
-			pistonLeft.getTransforms().addAll(pistonHoriRight);
+			transformPiston(pistonLeft,"Right");
 			Apressed = false;
 			System.out.println("left piston retracted");
 		} else if( coolDownTime - topPistonTimer > timeCanBeOut && Wpressed) {
-			pistonTop.getTransforms().addAll(pistonVertiDown);
+			transformPiston(pistonTop,"Down");
 			Wpressed = false;
 			System.out.println("top piston retracted");
 		} else if( coolDownTime - botPistonTimer > timeCanBeOut && Spressed) {
-			pistonBottom.getTransforms().addAll(pistonVertiUp);
+			transformPiston(pistonBottom,"Up");
 			Spressed = false;
 			System.out.println("bottom piston retracted");
 		}
 		
 		/* mirror match starts here*/
 		if( coolDownTime - mrightPistonTimer > timeCanBeOut && RIGHTpressed) {
-//			mpistonRight.getTransforms().addAll(mpistonHoriLeft);
 			transformPiston(mpistonRight,"Left");
 			RIGHTpressed = false;
 			System.out.println("mright piston retracted");
 		}
 		if( coolDownTime - mleftPistonTimer > timeCanBeOut && LEFTpressed) {
-			//mpistonLeft.getTransforms().addAll(mpistonHoriRight);
 			transformPiston(mpistonLeft,"Right");
 			LEFTpressed = false;
 			System.out.println("mleft piston retracted");
 		}
 		if( coolDownTime - mtopPistonTimer > timeCanBeOut && UPpressed) {
-			//mpistonTop.getTransforms().addAll(mpistonVertiDown);
 			transformPiston(mpistonTop,"Down");
 			UPpressed = false;
 			System.out.println("mtop piston retracted");
 		}
 		if( coolDownTime - mbotPistonTimer > timeCanBeOut && DOWNpressed) {
-			//mpistonBottom.getTransforms().addAll(mpistonVertiUp);
 			transformPiston(mpistonBottom,"Up");
 			DOWNpressed = false;
 			System.out.println("mbot piston retracted");
@@ -509,23 +506,22 @@ public class Main extends Application {
 	public void enemyAIAttackLogic() {
 		if(enemyAI && !RIGHTpressed) {
 			debugString = new String(debugString + "rightAI");
-			mpistonRight.getTransforms().addAll(mpistonHoriRight);
-			//mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+			transformPiston(mpistonRight, "Right");
 			RIGHTpressed = true;
 			mrightPistonTimer = coolDownTime;
 		}
 		if(enemyAI && !LEFTpressed) {
-			mpistonLeft.getTransforms().addAll(mpistonHoriLeft);
+			transformPiston(mpistonLeft, "Left");
 			LEFTpressed = true;
 			mleftPistonTimer = coolDownTime;
 		}
 		if(enemyAI && !UPpressed) {
-			mpistonTop.getTransforms().addAll(mpistonVertiUp);
+			transformPiston(mpistonTop, "Up");
 			UPpressed = true;
 			mtopPistonTimer = coolDownTime;
 		}
 		if(enemyAI && !DOWNpressed) {
-			mpistonBottom.getTransforms().addAll(mpistonVertiDown);
+			transformPiston(mpistonBottom, "Down");
 			DOWNpressed = true;
 			mbotPistonTimer = coolDownTime;
 		}
@@ -842,6 +838,7 @@ public class Main extends Application {
 				menuGroup.setVisible(false);
 				menu = !menu;
 				gameSetup = true;
+				enemyAI = true;
 				gameplay = false;
 			}
 		});
@@ -864,6 +861,20 @@ public class Main extends Application {
 			public void handle(MouseEvent arg0) {
 				System.exit(0);
 			}
+		});
+		
+		mainMenuText.setOnMouseReleased(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent arg0) {
+				menuGroup.setVisible(true);
+				menu = true;
+				gameSetup = false;
+				enemyAI = false;
+				gameplay = false;
+				gameEnd();
+			}
+			
 		});
 		
 	}
@@ -894,7 +905,13 @@ public class Main extends Application {
 		countDown.setFill(sRed);
 		countDown.relocate(450,400);
 		
-		UI = new Group(UIBackground,mainCounter,enemyCounter,information,countDown);
+		mainMenuText = new Text(20,50, "Main Menu");
+		mainMenuText.setFont(new Font(40));
+		mainMenuText.setFill(white);
+		mainMenuText.relocate(20, 825);
+		
+		
+		UI = new Group(UIBackground,mainCounter,enemyCounter,information,countDown,mainMenuText);
 	}
 	
 	public void initializeMainCharacter() {
@@ -1291,6 +1308,10 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 		
+		gameEnd();
+	}
+	
+	public void gameEnd() {
 		resetUI();
 
 		// reset back to normal
@@ -1300,7 +1321,7 @@ public class Main extends Application {
 		enemyCounter.setText("RED: " + enemyBox);
 		
 		resetBoxes();
-		return;
+		
 	}
 	
 	public void resetUI() {
@@ -1323,7 +1344,6 @@ public class Main extends Application {
 		// relocation of characters
 		boxMain.relocate(arenaX, arenaY);
 		mboxMain.relocate(arenaX+810, arenaY-610);
-		return;
 	}
 	
 
